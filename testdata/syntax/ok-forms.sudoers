@@ -1,0 +1,20 @@
+# Valid: the forms sudowarden parses, for visudo to confirm.
+Defaults env_reset, !lecture, timestamp_timeout=5
+Defaults env_keep += "LANG LC_*, TZ"
+Defaults:alice !requiretty
+Defaults>root !set_logname
+Defaults!/usr/bin/su log_output
+User_Alias OPS = alice, bob, %ops
+Runas_Alias WEB = www-data, nginx
+Host_Alias SERVERS = web1, web2
+Cmnd_Alias RESTART = /usr/bin/systemctl restart nginx, /usr/bin/systemctl reload nginx : READ = /usr/bin/id
+Cmd_Alias UNUSED_OK = /usr/bin/true
+OPS SERVERS = (root) NOPASSWD: RESTART, (WEB) PASSWD: /usr/bin/id
+alice ALL = NOPASSWD:NOEXEC:/usr/bin/less /var/log/syslog, CWD=/srv TIMEOUT=5m sha256:0000000000000000000000000000000000000000000000000000000000000000 /usr/bin/id
+bob web1 = /usr/bin/id : web2 = NOPASSWD: /usr/bin/uptime
+#1000 ALL = (#0) /usr/bin/id  # a trailing comment
+carol ALL = /bin/echo a\,b\:c\=d, \
+    /usr/bin/true
+dave ALL = sudoedit /etc/hosts, READ
+Cmnd_Alias NOT_USED_BY_ANYONE = /usr/bin/false
+eve ALL = (ALL : ALL) ALL, !/usr/bin/su

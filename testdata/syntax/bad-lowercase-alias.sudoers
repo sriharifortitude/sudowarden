@@ -1,0 +1,2 @@
+Cmnd_Alias lower = /usr/bin/id
+alice ALL = lower
