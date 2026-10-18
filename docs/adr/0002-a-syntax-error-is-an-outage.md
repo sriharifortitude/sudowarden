@@ -12,10 +12,10 @@ but files dropped into /etc/sudoers.d by configuration management are often neve
 
 The parser reports every line sudo could not parse as SUDO030, at high severity, with the
 reason. That covers a command that is not a full path, a rule without `=`, an unclosed Runas
-list, a missing command, a lower-case alias name, an alias defined twice, an alias that refers
-to itself, a missing `@include` and an include cycle. Things sudo tolerates (an unused alias, a
-missing `@includedir`) are info. An alias used but never defined is medium: visudo accepts the
-file and warns, and the reference matches nothing.
+list, a missing command, a lower-case alias name, an alias defined twice, a missing `@include`
+and an include cycle. Things sudo tolerates (an unused alias, a missing `@includedir`) are info.
+An alias used but never defined, and an alias that refers to itself, are medium: visudo accepts
+the file and warns, and the reference does not match what it says.
 
 The parser is written from sudoers(5), and the list above is my reading of what sudo
 rejects. `scripts/differential.sh` checks it against the real visudo: on every fixture,
@@ -30,7 +30,9 @@ version called it fatal, but visudo prints "referenced but not defined" and acce
 It is now a warning. The same run found a bug in the comparison script itself: under `set -o
 pipefail`, sudowarden's own exit status (1, because it had findings) decided the prediction
 instead of the findings, so every file was predicted to pass. Two fixtures were added to settle
-the remaining claims about aliases: one defined twice, and two that refer to each other.
+the remaining claims about aliases: one defined twice, and two that refer to each other. The
+second run settled both. visudo rejects the duplicate, as predicted, but only warns about the
+cycle. The cycle is now a warning too, and all twelve fixtures agree with visudo 1.9.15.
 
 ## Consequences
 

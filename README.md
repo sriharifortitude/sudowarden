@@ -65,7 +65,7 @@ with the rule's user list.
 | SUDO012 | high / medium | `!authenticate`; `visiblepw`; `exempt_group` |
 | SUDO013 | low | `timestamp_timeout` negative or over an hour; `!use_pty`; logging turned off |
 | SUDO030 | high | a line sudo cannot parse: sudo refuses to run for anyone until it is fixed |
-| SUDO031 | info / medium | an unused alias, a missing `@includedir`, an include using `%h`; an alias used but never defined (medium: visudo accepts the file, and the reference matches nothing) |
+| SUDO031 | info / medium | an unused alias, a missing `@includedir`, an include using `%h`; an alias used but never defined, or one that refers to itself (medium: visudo accepts the file with a warning) |
 
 Every finding names the file, line and user list, and the Cmnd_Alias chain the command came
 through. [ADR 1](docs/adr/0001-judge-what-a-grant-allows.md) explains how programs are judged
@@ -92,14 +92,15 @@ go test ./...                       # 35 tests and a fuzz target
 the files in `testdata/syntax/`: one with every form the parser handles, one that visudo only
 warns about, and the rest each broken in one way. visudo must reject a file exactly when
 sudowarden reports SUDO030. There is no sudo on the Windows machine this was built on, so it
-runs in CI, against visudo 1.9.15. The first run confirmed that the six broken files are
-rejected, and showed one wrong prediction. An alias that is used but never defined does not
-make visudo fail: it prints "referenced but not defined" and accepts the file. The first
-version called that fatal; it is now a medium finding. The same run found a bug in the script
-itself: under `set -o pipefail`, sudowarden's exit status decided the prediction instead of
-its findings, so every file was predicted to pass. Two fixtures were added after that run, an
-alias defined twice and two aliases that refer to each other, and CI checks them against
-visudo on every push.
+runs in CI, against visudo 1.9.15, and all twelve fixtures now agree with it. Getting there
+took two corrections. First, an alias that is used but never defined does not make visudo
+fail: it prints "referenced but not defined" and accepts the file. Second, after that run I
+added two fixtures for the remaining alias claims, and the next run showed visudo treats an
+alias cycle the same way: it warns and accepts. A duplicate alias, on the other hand, is
+rejected, as predicted. Both the undefined alias and the cycle are now medium findings, not
+fatal ones. The first run also found a bug in the script itself: under `set -o pipefail`,
+sudowarden's exit status decided the prediction instead of its findings, so every file was
+predicted to pass.
 
 **Mutation testing.** I broke the code in 52 places on purpose. On the first
 run, 9 mutants survived and 2 did not compile.

@@ -87,7 +87,8 @@ func (e *Expanded) reference(defs map[string]*Alias, kind, name, file string, li
 		seen = map[string]bool{}
 	}
 	if seen[key] {
-		e.Problems = append(e.Problems, Problem{File: a.File, Line: a.Line, Fatal: true, Message: kind + "_Alias " + name + " refers to itself"})
+		// visudo 1.9.15 prints "cycle in ..._Alias" and still accepts the file.
+		e.Problems = append(e.Problems, Problem{File: a.File, Line: a.Line, Warn: true, Message: kind + "_Alias " + name + " refers to itself"})
 		return
 	}
 	seen[key] = true
@@ -114,7 +115,7 @@ func (e *Expanded) command(defs map[string]*Alias, r *Rule, c Command, via []str
 		return
 	}
 	if seen[key] {
-		e.Problems = append(e.Problems, Problem{File: a.File, Line: a.Line, Fatal: true, Message: "Cmnd_Alias " + name + " refers to itself"})
+		e.Problems = append(e.Problems, Problem{File: a.File, Line: a.Line, Warn: true, Message: "Cmnd_Alias " + name + " refers to itself"})
 		return
 	}
 	seen[key] = true
