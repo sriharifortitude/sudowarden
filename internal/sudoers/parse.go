@@ -23,6 +23,8 @@ type Problem struct {
 	Message string
 	// Fatal problems make visudo -c fail; sudo then refuses to run for everyone.
 	Fatal bool
+	// Warn marks a problem visudo accepts but warns about, where the line does not do what it says.
+	Warn bool
 }
 
 // Default is one setting from a Defaults line.

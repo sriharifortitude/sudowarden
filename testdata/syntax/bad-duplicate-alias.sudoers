@@ -1,0 +1,3 @@
+Cmnd_Alias A = /usr/bin/id
+Cmnd_Alias A = /usr/bin/true
+alice ALL = A

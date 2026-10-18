@@ -78,8 +78,9 @@ func (e *Expanded) reference(defs map[string]*Alias, kind, name, file string, li
 	key := kind + " " + name
 	a, ok := defs[key]
 	if !ok {
-		e.Problems = append(e.Problems, Problem{File: file, Line: line, Fatal: true,
-			Message: kind + "_Alias " + name + " is used but not defined"})
+		// visudo 1.9.15 prints "referenced but not defined" and still accepts the file.
+		e.Problems = append(e.Problems, Problem{File: file, Line: line, Warn: true,
+			Message: kind + "_Alias " + name + " is used but not defined, so the reference matches nothing"})
 		return
 	}
 	if seen == nil {
@@ -108,7 +109,8 @@ func (e *Expanded) command(defs map[string]*Alias, r *Rule, c Command, via []str
 	key := "Cmnd " + name
 	a, ok := defs[key]
 	if !ok {
-		e.Problems = append(e.Problems, Problem{File: r.File, Line: r.Line, Fatal: true, Message: "Cmnd_Alias " + name + " is used but not defined"})
+		e.Problems = append(e.Problems, Problem{File: r.File, Line: r.Line, Warn: true,
+			Message: "Cmnd_Alias " + name + " is used but not defined, so the reference matches nothing"})
 		return
 	}
 	if seen[key] {

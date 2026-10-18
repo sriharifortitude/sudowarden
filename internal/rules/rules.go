@@ -157,6 +157,10 @@ func Check(f *sudoers.File, e *sudoers.Expanded) []Finding {
 	var out []Finding
 	for _, p := range append(append([]sudoers.Problem{}, f.Problems...), e.Problems...) {
 		sev, id := "info", "SUDO031"
+		if p.Warn {
+			sev = "medium"
+			p.Message += "; visudo accepts the file but warns"
+		}
 		if p.Fatal {
 			sev, id = "high", "SUDO030"
 			p.Message += "; visudo -c fails, and sudo refuses to run for anyone while the file is broken"

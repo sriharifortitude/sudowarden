@@ -167,6 +167,10 @@ func TestSyntaxErrorsAreHigh(t *testing.T) {
 	if fs := run(t, "User_Alias UNUSED = bob\n"); !has(fs, "SUDO031", "info", "never used") {
 		t.Fatal(list(fs))
 	}
+	// visudo 1.9.15 accepts a reference to an undefined alias, with a warning.
+	if fs := run(t, "alice ALL = MISSING\n"); !has(fs, "SUDO031", "medium", "matches nothing") || has(fs, "SUDO030", "high", "") {
+		t.Fatal(list(fs))
+	}
 }
 
 func TestFindingsNameTheAliasPath(t *testing.T) {

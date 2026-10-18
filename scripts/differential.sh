@@ -17,7 +17,9 @@ status=0
 check() { # display name, file
   local name=$1 file=$2 predicted actual
   predicted=accept
-  if "$BIN" --json "$file" | python3 -c 'import json,sys; sys.exit(0 if any(f["id"] == "SUDO030" for f in json.load(sys.stdin)["findings"]) else 1)'; then
+  # sudowarden exits 1 when it has findings; under pipefail that must not decide the prediction.
+  "$BIN" --json "$file" > "$tmp/findings.json" || true
+  if python3 -c 'import json,sys; sys.exit(0 if any(f["id"] == "SUDO030" for f in json.load(open(sys.argv[1]))["findings"]) else 1)' "$tmp/findings.json"; then
     predicted=reject
   fi
   if sudo "$VISUDO" -c -f "$file" > "$tmp/out.txt" 2>&1; then actual=accept; else actual=reject; fi
